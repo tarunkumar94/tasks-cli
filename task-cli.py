@@ -32,11 +32,22 @@ class Task:
     def updatedAt(self):
         return self.__updatedAt
     
+    def __str__(self):
+        return f"{self.__id}: {self.__description} - {self.__status}"
 
 def add_task(task_list, description):
     new_task = Task(description)
     task_list.append(new_task)
     print(f"Task added successfully (ID: {new_task.id})")
+
+def list_tasks(task_list, status=None):
+    if status:
+        for task in task_list:
+            if task.status == status:
+                print(task)
+    else:
+        for task in task_list:
+            print(task)
 
 def start_application():
     task_list = []
@@ -48,6 +59,11 @@ def start_application():
                 add_task(task_list, parts[1])
             except IndexError :
                 logging.error("No description")
+        elif parts[0] == "list":
+            try:
+                list_tasks(task_list, parts[1])
+            except IndexError:
+                list_tasks(task_list)
         
 
 
