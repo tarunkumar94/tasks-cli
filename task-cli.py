@@ -35,9 +35,16 @@ class Task:
     def update(self, new_description):
         self.__description = new_description
         self.__updatedAt = datetime.now()
+
+    def set_status_in_progress(self):
+        self.__status = "in-progress"
+    
+    def set_status_done(self):
+        self.__status = "done"
     
     def __str__(self):
         return f"{self.__id}: {self.__description} - {self.__status}"
+    
 
 def add_task(task_list, description):
     new_task = Task(description)
@@ -55,11 +62,35 @@ def list_tasks(task_list, status=None):
 
 def update_task(task_list, id, new_description):
     try:
-        task_list[int(id)].update(new_description)
+        task_list[int(id)].update(" ".join(new_description).strip("\"\'"))
     except KeyError:
-        logging.error(f"Task with id: {id} does not exist.")
+        logging.error(f"Task with ID: {id} does not exist.")
     except ValueError:
-        logging.error(f"Incorrect index. Index must be an integer.")
+        logging.error(f"Incorrect ID. ID must be an integer.")
+
+def delete_task(task_list, id):
+    try:
+        del task_list[int(id)]
+    except KeyError:
+        logging.error(f"Task with ID: {id} does not exist.")
+    except ValueError:
+        logging.error("Incorrect ID. ID must me an integer.")
+
+def set_status_in_progress(task_list, id):
+    try:
+        task_list[int(id)].set_status_in_progress()
+    except KeyError:
+        logging.error(f"Task with ID: {id} does not exist.")
+    except ValueError:
+        logging.error("Incorrect ID. ID must me an integer.")
+
+def set_status_done(task_list, id):
+    try:
+        task_list[int(id)].set_status_done()
+    except KeyError:
+        logging.error(f"Task with ID: {id} does not exist.")
+    except ValueError:
+        logging.error("Incorrect ID. ID must me an integer.")
 
 def start_application():
     task_list = {}
@@ -78,9 +109,24 @@ def start_application():
                 list_tasks(task_list)
         elif parts[0] == "update":
             try:
-                update_task(task_list, parts[1], parts[2])
+                update_task(task_list, parts[1], parts[2:])
             except IndexError:
                 logging.error("Incorrect input. Please input ID and description.")
+        elif parts[0] == "delete":
+            try:
+                delete_task(task_list, parts[1])
+            except IndexError:
+                logging.error("Please input task ID.")
+        elif parts[0] == "mark-in-progress":
+            try:
+                set_status_in_progress(task_list, parts[1])
+            except IndexError:
+                logging.error("Please input task ID.")
+        elif parts[0] == "mark-done":
+            try:
+                set_status_done(task_list, parts[1])
+            except IndexError:
+                logging.error("Please input task ID.")
 
 
 def main():
