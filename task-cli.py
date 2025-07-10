@@ -2,6 +2,7 @@ from datetime import datetime
 import itertools
 import json
 import logging
+import shlex
 from pathlib import Path
 
 class Task:
@@ -79,7 +80,7 @@ Updated: {self.updatedAt}"
     
 
 def add_task(task_list, task_description):
-    new_task = Task(description=task_description)
+    new_task = Task(description=" ".join(task_description))
     task_list[new_task.id] = new_task
     print(f"Task added successfully (ID: {new_task.id})")
 
@@ -94,7 +95,7 @@ def list_tasks(task_list, status=None):
 
 def update_task(task_list, id, new_description):
     try:
-        task_list[int(id)].update(" ".join(new_description).strip("\"\'"))
+        task_list[int(id)].update(" ".join(new_description))
     except KeyError:
         logging.error(f"Task with ID: {id} does not exist.")
     except ValueError:
@@ -146,16 +147,18 @@ def load_tasks_from_file(FILE_NAME):
 
 def start_application(FILE_NAME):  
     task_list = load_tasks_from_file(FILE_NAME)
-    max_id = max(task_list.keys())
+    max_id = max(task_list.keys(), default=0)
     if max_id:
         Task.reset_id_counter(start=max_id + 1)
     while True:
         task_list_updated = True
         command = input("task-cli ")
-        parts = command.split()        
+        parts = shlex.split(command)
+        if not parts:
+            continue
         if parts[0] == "add":
             try:
-                add_task(task_list, parts[1])
+                add_task(task_list, parts[1:])
             except IndexError :
                 logging.error("No description")
         elif parts[0] == "list":
@@ -194,6 +197,7 @@ def main():
     
     logging.basicConfig(
         format="%(levelname)s - %(message)s",
+        level=logging.INFO,
         style="%"
     )
     start_application(FILE_NAME)
